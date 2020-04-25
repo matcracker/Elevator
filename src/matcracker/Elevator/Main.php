@@ -95,12 +95,10 @@ class Main extends PluginBase implements Listener{
 			}
 		}elseif($line === self::LIFT_DOWN){
 			$y--;
-			if($y > 0){
-				for(; $y >= 0; $y--){
-					if(self::isLiftSign($x, $y, $z, $level)){
-						$teleportPos = new Vector3($x, $y, $z);
-						break;
-					}
+			for(; $y >= 0; $y--){
+				if(self::isLiftSign($x, $y, $z, $level)){
+					$teleportPos = new Vector3($x, $y, $z);
+					break;
 				}
 			}
 		}else{

@@ -1,0 +1,11 @@
+---
+name: Elevator
+main: matcracker\Elevator\Main
+version: 0.1.0
+api: [3.0.0]
+
+load: POSTWORLD
+author: matcracker
+description: "A simple elevator plugin that uses signs."
+website: https://github.com/matcracker/Elevator
+...

@@ -14,6 +14,7 @@ use pocketmine\plugin\PluginBase;
 use pocketmine\tile\Sign;
 use pocketmine\utils\TextFormat;
 use UnexpectedValueException;
+use function floor;
 use function strtolower;
 
 class Main extends PluginBase implements Listener{
@@ -62,9 +63,9 @@ class Main extends PluginBase implements Listener{
 			return;
 		}
 
-		$x = $block->getX();
-		$y = $block->getY();
-		$z = $block->getZ();
+		$x = (int) floor($block->getX());
+		$y = (int) floor($block->getY());
+		$z = (int) floor($block->getZ());
 
 		if(($clickedSign = self::isLiftSign($x, $y, $z, $level)) === null){
 			return;

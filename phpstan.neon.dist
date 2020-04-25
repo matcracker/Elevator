@@ -1,0 +1,8 @@
+parameters:
+    level: 8
+    paths:
+        - /source/src
+    autoload_files:
+        - phar:///pocketmine/PocketMine-MP.phar/vendor/autoload.php
+    autoload_directories:
+        - /source/src

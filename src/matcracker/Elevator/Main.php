@@ -90,7 +90,7 @@ final class Main extends PluginBase{
 
 		if(strtolower($args[0]) === "reload"){
 			if(!$sender->hasPermission("elevator.command.reload")){
-				$sender->sendMessage($command->getPermissionMessage());
+				$sender->sendMessage($command->getPermissionMessage() ?? $this->getServer()->getLanguage()->translateString(TextFormat::RED . "%commands.generic.permission"));
 
 				return false;
 			}

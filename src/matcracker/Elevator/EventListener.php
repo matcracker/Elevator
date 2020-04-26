@@ -76,9 +76,7 @@ final class EventListener implements Listener{
 		}
 
 		$line = TextFormat::clean($clickedSign->getLine(Main::getSignLine()));
-
 		$maxY = $level->getWorldHeight();
-
 		$found = false;
 
 		if($up = ($line === Main::getSignUpText(true))){

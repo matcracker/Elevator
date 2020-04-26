@@ -4,134 +4,107 @@ declare(strict_types=1);
 
 namespace matcracker\Elevator;
 
-use pocketmine\block\SignPost;
-use pocketmine\event\block\SignChangeEvent;
-use pocketmine\event\Listener;
-use pocketmine\event\player\PlayerInteractEvent;
-use pocketmine\level\Level;
-use pocketmine\math\Vector3;
+use pocketmine\command\Command;
+use pocketmine\command\CommandSender;
 use pocketmine\plugin\PluginBase;
-use pocketmine\tile\Sign;
 use pocketmine\utils\TextFormat;
-use UnexpectedValueException;
-use function floor;
+use function mkdir;
 use function strtolower;
 
-class Main extends PluginBase implements Listener{
+final class Main extends PluginBase{
 
-	public const LIFT_UP = "[Lift Up]";
-	public const LIFT_DOWN = "[Lift Down]";
+	/** @var mixed[] */
+	private static $configData;
 
-	public function onEnable(){
-		$this->getServer()->getPluginManager()->registerEvents($this, $this);
+	public static function getSignLine() : int{
+		return (int) self::$configData["signs"]["line"];
 	}
 
-	public function onSignChange(SignChangeEvent $event) : void{
-		$player = $event->getPlayer();
-		if(!$player->hasPermission("elevator.sign.create")){
-			$player->sendMessage(TextFormat::RED . "You don't have permission to create an elevator sign.");
-
-			return;
-		}
-
-		//Adjust sign lift text.
-		$line = TextFormat::clean(strtolower($event->getLine(1)));
-
-		if($line === strtolower(self::LIFT_UP)){
-			$line = self::LIFT_UP;
-		}elseif($line === strtolower(self::LIFT_DOWN)){
-			$line = self::LIFT_DOWN;
-		}else{
-			return;
-		}
-
-		$event->setLine(1, TextFormat::DARK_BLUE . $line);
+	public static function getSignUpText(bool $clean = false) : string{
+		return self::getSignText("up-text", $clean);
 	}
 
-	public function onPlayerInteract(PlayerInteractEvent $event) : void{
-		if($event->getAction() !== PlayerInteractEvent::RIGHT_CLICK_BLOCK){
-			return;
+	private static function getSignText(string $sign, bool $clean = false) : string{
+		$text = TextFormat::colorize(self::$configData["signs"][$sign]);
+
+		if($clean){
+			return TextFormat::clean($text);
 		}
 
-		$block = $event->getBlock();
-		if(!$block instanceof SignPost){
-			return;
+		return $text;
+	}
+
+	public static function getSignDownText(bool $clean = false) : string{
+		return self::getSignText("down-text", $clean);
+	}
+
+	public static function getMsgCreateDeny() : string{
+		return TextFormat::colorize(self::$configData["messages"]["sign-create-deny"]);
+	}
+
+	public static function getMsgCreateSuccess() : string{
+		return TextFormat::colorize(self::$configData["messages"]["sign-create-success"]);
+	}
+
+	public static function getMsgUseDeny() : string{
+		return TextFormat::colorize(self::$configData["messages"]["sign-use-deny"]);
+	}
+
+	public static function getMsgNoDestination() : string{
+		return TextFormat::colorize(self::$configData["messages"]["no-destination"]);
+	}
+
+	public static function getMsgTeleportUp() : string{
+		return TextFormat::colorize(self::$configData["messages"]["teleport-up"]);
+	}
+
+	public static function getMsgTeleportDown() : string{
+		return TextFormat::colorize(self::$configData["messages"]["teleport-down"]);
+	}
+
+	public static function getMsgElevatorNotSafe() : string{
+		return TextFormat::colorize(self::$configData["messages"]["elevator-not-safe"]);
+	}
+
+	public function onLoad() : void{
+		@mkdir($this->getDataFolder());
+		self::$configData = $this->getConfig()->getAll();
+	}
+
+	public function onEnable() : void{
+		$this->getServer()->getPluginManager()->registerEvents(new EventListener(), $this);
+	}
+
+	public function onCommand(CommandSender $sender, Command $command, string $label, array $args) : bool{
+		if(strtolower($command->getName()) !== "elevator"){
+			return false;
 		}
 
-		$level = $block->getLevel();
-		if($level === null){
-			return;
+		if(!$command->testPermission($sender)){
+			return false;
 		}
 
-		$x = (int) floor($block->getX());
-		$y = (int) floor($block->getY());
-		$z = (int) floor($block->getZ());
-
-		if(($clickedSign = self::isLiftSign($x, $y, $z, $level)) === null){
-			return;
+		if(!isset($args[0])){
+			return false;
 		}
 
-		$event->setCancelled();
+		if(strtolower($args[0]) === "reload"){
+			if(!$sender->hasPermission("elevator.command.reload")){
+				$sender->sendMessage($command->getPermissionMessage());
 
-		$player = $event->getPlayer();
-		if(!$player->hasPermission("elevator.sign.use")){
-			$player->sendMessage(TextFormat::RED . "You don't have permission to use the elevator sign.");
-
-			return;
-		}
-
-		$line = TextFormat::clean($clickedSign->getLine(1));
-
-		$teleportPos = null;
-		$maxY = $level->getWorldHeight();
-
-		if($up = ($line === self::LIFT_UP)){
-			$y++;
-			for(; $y <= $maxY; $y++){
-				if(self::isLiftSign($x, $y, $z, $level) !== null){
-					$teleportPos = new Vector3($x, $y, $z);
-					break;
-				}
+				return false;
 			}
-		}elseif($line === self::LIFT_DOWN){
-			$y--;
-			for(; $y >= 0; $y--){
-				if(self::isLiftSign($x, $y, $z, $level)){
-					$teleportPos = new Vector3($x, $y, $z);
-					break;
-				}
-			}
-		}else{
-			throw new UnexpectedValueException("What?");
+			$this->reloadPlugin();
+			$sender->sendMessage(TextFormat::GREEN . "Plugin successfully reloaded.");
+
+			return true;
 		}
 
-		if($teleportPos !== null){
-			$player->sendMessage(TextFormat::GREEN . "Teleporting " . ($up ? "up" : "down") . ".");
-			$player->teleport(self::getCenterBlock($teleportPos));
-		}else{
-			$player->sendMessage(TextFormat::RED . "Could not find an elevator destination.");
-		}
+		return false;
 	}
 
-	public static function isLiftSign(int $x, int $y, int $z, Level $level) : ?Sign{
-		$liftDest = $level->getTileAt($x, $y, $z);
-		if(!$liftDest instanceof Sign){
-			return null;
-		}
-
-		$line = TextFormat::clean($liftDest->getLine(1));
-
-		if($line !== self::LIFT_UP && $line !== self::LIFT_DOWN){
-			return null;
-		}
-
-		return $liftDest;
-	}
-
-	private static function getCenterBlock(Vector3 $vector3) : Vector3{
-		$x = $vector3->getX() ? 0.5 : -0.5;
-		$z = $vector3->getZ() ? 0.5 : -0.5;
-
-		return $vector3->add($x, 0, $z);
+	private function reloadPlugin() : void{
+		$this->reloadConfig();
+		self::$configData = $this->getConfig()->getAll();
 	}
 }

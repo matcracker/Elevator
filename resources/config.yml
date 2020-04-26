@@ -1,0 +1,20 @@
+---
+#Signs text configuration
+signs:
+  #The line where the text must be written. (Value between 0 and 3)
+  line: 1
+  #The text to be written in the sign to go up.
+  up-text: "&1[Lift Up]"
+  #The text to be written in the sign to go down.
+  down-text: "&1[Lift Down]"
+
+#Messages configuration
+messages:
+  sign-create-success: "&aYou successfully create an elevator sign!"
+  sign-create-deny: "&cYou don't have permission to create an elevator sign."
+  sign-use-deny: "&cYou don't have permission to use the elevator sign."
+  teleport-up: "&aTeleporting up!"
+  teleport-down: "&aTeleporting down!"
+  elevator-not-safe: "&cThe next elevator is not in a safe place."
+  no-destination: "&cCould not find an elevator destination."
+...

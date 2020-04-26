@@ -6,4 +6,7 @@ parameters:
         - phar:///pocketmine/PocketMine-MP.phar/vendor/autoload.php
     autoload_directories:
         - /source/src
+        - /source/src/matcracker/Elevator/libs
         - /deps
+    excludes_analyse:
+        - /source/src/matcracker/Elevator/libs

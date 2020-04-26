@@ -4,5 +4,6 @@ parameters:
         - /source/src
     autoload_files:
         - phar:///pocketmine/PocketMine-MP.phar/vendor/autoload.php
+        - /deps
     autoload_directories:
         - /source/src

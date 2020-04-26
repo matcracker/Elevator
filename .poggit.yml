@@ -5,4 +5,7 @@ branches:
 projects:
   Elevator:
     path: ""
+    libs:
+      - src: JackMD/UpdateNotifier/UpdateNotifier
+        version: 1.0.0
 ...

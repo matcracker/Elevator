@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace matcracker\Elevator;
 
+use JackMD\UpdateNotifier\UpdateNotifier;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\plugin\PluginBase;
@@ -73,6 +74,7 @@ final class Main extends PluginBase{
 
 	public function onEnable() : void{
 		$this->getServer()->getPluginManager()->registerEvents(new EventListener(), $this);
+		UpdateNotifier::checkUpdate($this, $this->getName(), $this->getDescription()->getVersion());
 	}
 
 	public function onCommand(CommandSender $sender, Command $command, string $label, array $args) : bool{

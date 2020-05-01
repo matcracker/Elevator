@@ -88,7 +88,7 @@ final class Main extends PluginBase{
 
 	public function onEnable() : void{
 		$this->getServer()->getPluginManager()->registerEvents(new EventListener(), $this);
-		UpdateNotifier::checkUpdate($this, $this->getName(), $this->getDescription()->getVersion());
+		UpdateNotifier::checkUpdate($this->getName(), $this->getDescription()->getVersion());
 	}
 
 	public function onCommand(CommandSender $sender, Command $command, string $label, array $args) : bool{

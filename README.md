@@ -6,10 +6,6 @@ A simple PocketMine-MP plugin that allows to create elevators on your server usi
 ## How to use
 ![Usage](https://github.com/matcracker/ImageContainer/blob/master/Elevator/Elevator_Usage.gif)
 
-Multi-floor example.
-
-![Multifloor](https://github.com/matcracker/Elevator/blob/master/.github/Multifloor_Example.png)
-
 ## Commands
 - **/elevator reload**: Reload the plugin configuration.
 

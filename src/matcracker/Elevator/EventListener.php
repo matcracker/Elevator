@@ -34,13 +34,6 @@ use function strtolower;
 final class EventListener implements Listener{
 
 	public function onSignChange(SignChangeEvent $event) : void{
-		$player = $event->getPlayer();
-		if(!$player->hasPermission("elevator.sign.create")){
-			$player->sendMessage(Main::getMsgCreateDeny());
-
-			return;
-		}
-
 		//Adjust sign lift text.
 		$lineIndex = Main::getSignLine();
 		$line = TextFormat::clean(TextFormat::colorize(strtolower($event->getLine($lineIndex))));
@@ -50,6 +43,14 @@ final class EventListener implements Listener{
 		}elseif($line === strtolower(Main::getSignDownText(true))){
 			$line = Main::getSignDownText();
 		}else{
+			return;
+		}
+
+		$player = $event->getPlayer();
+
+		if(!$player->hasPermission("elevator.sign.create")){
+			$player->sendMessage(Main::getMsgCreateDeny());
+
 			return;
 		}
 
@@ -151,9 +152,6 @@ final class EventListener implements Listener{
 	}
 
 	private static function getCenterBlock(Vector3 $vector3) : Vector3{
-		$x = $vector3->getX() ? 0.5 : -0.5;
-		$z = $vector3->getZ() ? 0.5 : -0.5;
-
-		return $vector3->add($x, 0, $z);
+		return $vector3->add(0.5, 0, 0.5);
 	}
 }

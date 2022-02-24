@@ -6,6 +6,6 @@ projects:
   Elevator:
     path: ""
     libs:
-      - src: JackMD/UpdateNotifier/UpdateNotifier
+      - src: ifera-mc/UpdateNotifier/UpdateNotifier
         version: ~3.0.0
 ...

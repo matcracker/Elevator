@@ -143,7 +143,7 @@ final class EventListener implements Listener{
 		}
 	}
 
-	public static function isLiftSign(int $x, $y, $z, World $world) : bool{
+	public static function isLiftSign(int $x, int $y, int $z, World $world) : bool{
 		$sign = $world->getBlockAt($x, $y, $z);
 
 		if(!$sign instanceof BaseSign){

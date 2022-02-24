@@ -28,7 +28,7 @@ use function strtolower;
 
 final class Main extends PluginBase{
 
-	private static array $configData;
+	private static array $configData = [];
 
 	public static function getSignLine() : int{
 		return (int) self::$configData["signs"]["line"];

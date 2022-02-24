@@ -1,26 +1,22 @@
 ---
 name: Elevator
 main: matcracker\Elevator\Main
-version: 1.0.1
-api: [3.0.0]
+version: 1.1.0
+api: 4.0.0
 
-load: POSTWORLD
 author: matcracker
 description: "A simple elevator plugin that uses signs."
 website: https://github.com/matcracker/Elevator
 
 commands:
   elevator:
-    permission: "elevator.command"
+    permission: "elevator.command.reload"
     description: "Allows to reload the Elevator plugin configuration"
     usage: "/elevator reload"
 
 permissions:
-  elevator.command:
+  elevator.command.reload:
     default: op
-    children:
-      elevator.command.reload:
-        default: op
   elevator.sign.create:
     default: op
   elevator.sign.use:

@@ -3,7 +3,7 @@
 /*
  * Elevator
  *
- * Copyright (C) 2020
+ * Copyright (C) 2020-2022
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -28,8 +28,7 @@ use function strtolower;
 
 final class Main extends PluginBase{
 
-	/** @var mixed[] */
-	private static $configData;
+	private static array $configData;
 
 	public static function getSignLine() : int{
 		return (int) self::$configData["signs"]["line"];

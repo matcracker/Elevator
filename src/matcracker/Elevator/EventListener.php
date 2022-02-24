@@ -3,7 +3,7 @@
 /*
  * Elevator
  *
- * Copyright (C) 2020
+ * Copyright (C) 2020-2022
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -19,28 +19,31 @@ declare(strict_types=1);
 namespace matcracker\Elevator;
 
 use pocketmine\block\Air;
-use pocketmine\block\SignPost;
+use pocketmine\block\BaseSign;
+use pocketmine\block\utils\SignText;
+use pocketmine\block\WallSign;
 use pocketmine\event\block\SignChangeEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
-use pocketmine\level\Level;
 use pocketmine\math\Vector3;
-use pocketmine\tile\Sign;
 use pocketmine\utils\TextFormat;
+use pocketmine\world\World;
 use UnexpectedValueException;
-use function floor;
-use function strtolower;
+use function mb_strtolower;
 
 final class EventListener implements Listener{
 
 	public function onSignChange(SignChangeEvent $event) : void{
+		$text = $event->getSign()->getText();
+		$lines = $text->getLines();
+
 		//Adjust sign lift text.
 		$lineIndex = Main::getSignLine();
-		$line = TextFormat::clean(TextFormat::colorize(strtolower($event->getLine($lineIndex))));
+		$line = TextFormat::clean(TextFormat::colorize(mb_strtolower($lines[$lineIndex])));
 
-		if($line === strtolower(Main::getSignUpText(true))){
+		if($line === mb_strtolower(Main::getSignUpText(true))){
 			$line = Main::getSignUpText();
-		}elseif($line === strtolower(Main::getSignDownText(true))){
+		}elseif($line === mb_strtolower(Main::getSignDownText(true))){
 			$line = Main::getSignDownText();
 		}else{
 			return;
@@ -54,7 +57,10 @@ final class EventListener implements Listener{
 			return;
 		}
 
-		$event->setLine($lineIndex, $line);
+		//Correct the line
+		$lines[$lineIndex] = $line;
+
+		$event->setNewText(new SignText($lines));
 		$player->sendMessage(Main::getMsgCreateSuccess());
 	}
 
@@ -63,25 +69,23 @@ final class EventListener implements Listener{
 			return;
 		}
 
-		$block = $event->getBlock();
-		if(!$block instanceof SignPost){
+		$sign = $event->getBlock();
+		if(!$sign instanceof WallSign){
 			return;
 		}
 
-		$level = $block->getLevel();
-		if($level === null){
+		$blockPos = $sign->getPosition();
+		$world = $blockPos->getWorld();
+
+		$x = (int) $blockPos->getX();
+		$y = (int) $blockPos->getY();
+		$z = (int) $blockPos->getZ();
+
+		if(!self::isLiftSign($x, $y, $z, $world)){
 			return;
 		}
 
-		$x = (int) floor($block->getX());
-		$y = (int) floor($block->getY());
-		$z = (int) floor($block->getZ());
-
-		if(($clickedSign = self::isLiftSign($x, $y, $z, $level)) === null){
-			return;
-		}
-
-		$event->setCancelled();
+		$event->cancel();
 
 		$player = $event->getPlayer();
 		if(!$player->hasPermission("elevator.sign.use")){
@@ -90,21 +94,24 @@ final class EventListener implements Listener{
 			return;
 		}
 
-		$line = TextFormat::clean($clickedSign->getLine(Main::getSignLine()));
-		$maxY = $level->getWorldHeight();
+		$text = $sign->getText();
+
+		$line = TextFormat::clean($text->getLine(Main::getSignLine()));
+		$maxY = $world->getMaxY();
 		$found = false;
 
 		if($up = ($line === Main::getSignUpText(true))){
 			$y++;
 			for(; $y <= $maxY; $y++){
-				if($found = (self::isLiftSign($x, $y, $z, $level) !== null)){
+				if($found = self::isLiftSign($x, $y, $z, $world)){
 					break;
 				}
 			}
 		}elseif($line === Main::getSignDownText(true)){
 			$y--;
-			for(; $y >= 0; $y--){
-				if($found = (self::isLiftSign($x, $y, $z, $level) !== null)){
+			$mixY = $world->getMinY();
+			for(; $y >= $mixY; $y--){
+				if($found = self::isLiftSign($x, $y, $z, $world)){
 					break;
 				}
 			}
@@ -117,7 +124,7 @@ final class EventListener implements Listener{
 			$safe = false;
 			$maxY = $y - 1;
 			for(; $y >= $maxY; $y--){
-				$ground = $level->getBlockAt($x, $y, $z);
+				$ground = $world->getBlockAt($x, $y, $z);
 				if($safe = (!$ground instanceof Air)){
 					$y++;
 					break;
@@ -136,19 +143,16 @@ final class EventListener implements Listener{
 		}
 	}
 
-	public static function isLiftSign(int $x, int $y, int $z, Level $level) : ?Sign{
-		$liftDest = $level->getTileAt($x, $y, $z);
-		if(!$liftDest instanceof Sign){
-			return null;
+	public static function isLiftSign(int $x, $y, $z, World $world) : bool{
+		$sign = $world->getBlockAt($x, $y, $z);
+
+		if(!$sign instanceof BaseSign){
+			return false;
 		}
 
-		$line = TextFormat::clean($liftDest->getLine(Main::getSignLine()));
+		$line = TextFormat::clean($sign->getText()->getLine(Main::getSignLine()));
 
-		if($line !== Main::getSignUpText(true) && $line !== Main::getSignDownText(true)){
-			return null;
-		}
-
-		return $liftDest;
+		return $line === Main::getSignUpText(true) || $line === Main::getSignDownText(true);
 	}
 
 	private static function getCenterBlock(Vector3 $vector3) : Vector3{
